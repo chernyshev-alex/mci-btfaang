@@ -32,6 +32,8 @@ impl Solution {
     best_area
   }
 
+  // https://leetcode.com/problems/trapping-rain-water/
+
   pub fn trapped_water_bf(height: Vec<i32>) -> i32 {
     let mut result = 0;
     for i in 0..height.len() {
@@ -51,6 +53,8 @@ impl Solution {
     }
     result
   }
+
+  // trapping-rain-water  optimized
 
   pub fn trapped_water_opt(height: Vec<i32>) -> i32 {
     let mut result = 0;
