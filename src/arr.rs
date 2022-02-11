@@ -17,11 +17,12 @@ impl Solution {
   }
 
   // https://leetcode.com/problems/container-with-most-water/
+  
   pub fn max_area(height: Vec<i32>) -> i32 { 
     let (mut best_area, mut x1, mut x2) = (0, 0, height.len()-1);
     while x1 < x2 {
       let area = std::cmp::min(height[x1], height[x2]) * (x2 - x1) as i32;
-      best_area = if area > best_area { area } else { best_area };
+      best_area = std::cmp::max(area, best_area);
       if height[x1] <= height[x2] { x1 += 1 } else { x2 -= 1 }
     }
     best_area
