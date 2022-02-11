@@ -1,7 +1,4 @@
 
-
 mod arr;
 
-fn main() {
-   
-}
+fn main() {}
