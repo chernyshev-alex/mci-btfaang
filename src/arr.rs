@@ -45,7 +45,7 @@ impl Solution {
         ri = ri + 1;
       }
       let current_water = std::cmp::min(lmax, rmax) - height[i];
-      if current_water >=0 {
+      if current_water >= 0 {
         result += current_water;
       }
     }
@@ -54,7 +54,25 @@ impl Solution {
 
   pub fn trapped_water_opt(height: Vec<i32>) -> i32 {
     let mut result = 0;
-    // TODO 
+    let (mut li, mut ri, mut lmax, mut rmax) = (0, height.len() - 1, 0, 0);
+    while li < ri {
+      match height[li] <= height[ri] {
+        true => {
+          match height[li] >= lmax {
+            true => lmax = height[li],
+            _ => result += lmax - height[li],
+          }
+          li += 1
+        }
+        _ => {
+          match height[ri] >= rmax {
+            true => rmax = height[ri],
+            _ => result += rmax - height[ri],
+          }
+          ri -= 1
+        }
+      }
+    }
     result
   }
 }
