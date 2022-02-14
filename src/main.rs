@@ -5,5 +5,5 @@ mod strs;
 use crate::strs::*;
 
 fn main() { 
-    Solution::backspace_compare("nzp#o#g".to_string(), "b#nzp#o#g".to_string());
+    Solution::length_of_longest_substring_bf(" ".to_string());
 }
