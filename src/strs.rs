@@ -41,17 +41,21 @@ impl Solution {
     true
   }
 
+  // https://leetcode.com/problems/longest-substring-without-repeating-characters/
+
   pub fn length_of_longest_substring_bf(s: String) -> i32 {
-    if s.len() <= 1 { return s.len() as i32 };
+    if s.len() <= 1 {
+      return s.len() as i32;
+    };
     let mut result = 0;
     let b = s.as_bytes();
     for i in 0..b.len() {
-      let mut partial_len = 0;
-      let mut seen_chars = [0; 255];
+      let (mut partial_len, mut seen_chars) = (0, [0; 255]);
+
       for j in i..b.len() {
-        let c = b[j];
-        if seen_chars[c as usize] == 0 {
-          seen_chars[c as usize] = c;
+        let c = b[j] as usize;
+        if seen_chars[c] == 0 {
+          seen_chars[c] = c;
           partial_len += 1;
           result = std::cmp::max(result, partial_len);
         } else {
