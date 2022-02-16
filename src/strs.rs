@@ -56,15 +56,52 @@ impl Solution {
         l = seen_idx + 1;
       }
       seen[c as usize] = r as u16;
-      result = std::cmp::max(result, (r as i32 - l as i32) +1);
+      result = std::cmp::max(result, (r as i32 - l as i32) + 1);
     }
     result
   }
-}
+
+  // https://leetcode.com/problems/valid-palindrome-ii/
+
+  pub fn valid_palindrome(s: String) -> bool {
+    fn is_palindrome(b: &[u8], mut l: usize, mut r: usize) -> bool {
+      while l < r {
+        if b[l] != b[r] {
+          return false;
+        }
+        l += 1;
+        r -= 1;
+      }
+      true
+    }
+    
+    let (mut l, mut r, b) = (0, s.len()-1, s.as_bytes());
+    while l < r {
+        if b[l] != b[r] {
+          return is_palindrome(b, l + 1, r) || is_palindrome(b, l, r - 1);
+        }
+        l += 1;
+        r -= 1;
+      }
+      true
+    }
+  }
 
 #[cfg(test)]
 mod test {
   use crate::strs::Solution;
+
+  #[test]
+  fn valid_palindrome_case1() {
+    let result = Solution::valid_palindrome("abc".to_string());
+    assert_eq!(result, false);
+  }
+
+  #[test]
+  fn valid_palindrome_case2() {
+    let result = Solution::valid_palindrome("abca".to_string());
+    assert_eq!(result, true);
+  }
 
   #[test]
   fn length_of_longest_substring_case7() {
