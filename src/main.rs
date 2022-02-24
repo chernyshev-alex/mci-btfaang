@@ -1,8 +1,10 @@
 
+use std::collections::LinkedList;
+
 mod arr;
 mod strs;
+mod lists;
 
-use crate::strs::*;
 
 fn main() { 
 
