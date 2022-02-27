@@ -1,11 +1,8 @@
-use std::collections::LinkedList;
-use std::collections::VecDeque;
-use std::ops::Deref;
-use std::ptr;
-use std::ptr::NonNull;
-use std::rc::Rc;
 
-// --------- Simple enum List impl --------------- //
+use std::collections::LinkedList;
+use std::ptr;
+
+// --------- Simple Enum based list --------------- //
 
 #[derive(Debug)]
 enum EList<T> {
@@ -38,72 +35,120 @@ impl<T: std::fmt::Debug> ToString for EList<T> {
     }
 }
 
-// --------- Node List impl --------------- //
+// --------- simple node based list  --------------- //
 
 #[derive(Debug)]
 struct Node<T> {
-    pub val: Option<T>,
-    pub next: NonNull<Node<T>>,
+    pub val: T,
+    pub next: *mut Node<T>,
+}
+#[derive(Debug)]
+struct NodeList<T> {
+    pub head: *mut Node<T>,
+    pub tail: *mut Node<T>,
+}
+pub struct IterNodeList<T> {
+    head: *mut Node<T>,
+    curr: *mut Node<T>,
+    tail: *mut Node<T>,
 }
 
-// https://doc.rust-lang.org/std/primitive.pointer.html
-// https://stackoverflow.com/questions/30831037/situations-where-cell-or-refcell-is-the-best-choice
+impl<T> Drop for NodeList<T> {
+    fn drop(&mut self) {
+        let mut curr = self.head;
+        while !curr.is_null() {
+            let next: *mut Node<T> = unsafe { (*curr).next };
+            unsafe {
+                Box::from_raw(curr);
+            }
+            curr = next;
+        }
+    }
+}
 
-impl<T, const N: usize> From<[T; N]> for Node<T> {
+impl<T: Copy> Iterator for IterNodeList<T> {
+    type Item = T;
+
+    fn next(&mut self) -> Option<T> {
+        if self.curr.is_null() {
+            return None;
+        }
+        let result = unsafe { &(*self.curr).val };
+        self.curr = unsafe { (*self.curr).next };
+        Some(*result)
+    }
+}
+
+impl<T: Copy> NodeList<T> {
+    pub fn iter(&self) -> IterNodeList<T> {
+        IterNodeList {
+            head: self.head,
+            curr: self.head,
+            tail: self.tail,
+        }
+    }
+
+    pub fn reverse(&mut self) -> &Self {
+        unsafe {
+            let (mut p1, mut p2) = (self.head, (*self.head).next);
+            (*p1).next = ptr::null_mut();
+            while !p2.is_null() {
+                let tmp_ref = (*p2).next;
+                (*p2).next = p1;
+                p1 = p2;
+                p2 = tmp_ref;
+            }
+            self.tail = self.head;
+            self.head = p1;
+        }
+        self
+    }
+
+    pub fn to_vec(&self) -> Vec<T> {
+        let mut result = Vec::<T>::new();
+        for el in self.iter() {
+            result.push(el);
+        }
+        result
+    }
+}
+
+impl<T: Copy, const N: usize> From<[T; N]> for NodeList<T> {
     fn from(arr: [T; N]) -> Self {
-        let mut head: *mut Node<T> = ptr::null_mut();
-        let mut last = head;
+        let (mut head, mut tail) = (ptr::null_mut::<Node<T>>(), ptr::null_mut::<Node<T>>());
         for e in arr {
-            let mut n = Box::new(Node {
-                val: Some(e),
-                next: NonNull::dangling(),
-            });
-            println!("iter ");
+            let node_ptr = Box::into_raw(Box::new(Node {
+                val: e,
+                next: ptr::null_mut(),
+            }));
             if head.is_null() {
-                head = &mut *n;
-                println!("is null {:?}", head);
-                last = head;
+                head = node_ptr;
+                tail = head;
             } else {
                 unsafe {
-                    (*last).next = NonNull::new_unchecked(n.as_mut());
+                    (*tail).next = node_ptr;
+                    tail = (*tail).next;
                 }
-                last = &mut *n;
-                println!("head not null {:?} last {:?}", head, last);
             }
         }
-        println!("return {:?} last {:?}", head, last);
-        unsafe { std::ptr::read(head) }
+        NodeList { head, tail }
     }
 }
 
-//1 -> 2 -> 3 -> None  =>  X -> 1 -> None
-// pub fn reverse(self) -> Self {
-//     let (mut curr, mut rev_head) = (self, ListNode::new(None));
-//     while curr.next.is_some() {
-//         let head = curr.next;
-//         curr.next = rev_head.next;
-//         rev_head = curr;
-//         curr = *head.unwrap()
-//     }
-//     curr
-// }
+//  -----  Linked list  ---- //
 
-pub struct Solution;
-
-impl Solution {
-    pub fn reverse_list_rec<T>(mut ls: LinkedList<T>, mut out: LinkedList<T>) -> LinkedList<T> {
-        if ls.is_empty() {
-            return out;
-        }
-        out.push_front(ls.pop_front().unwrap());
-        Self::reverse_list_rec(ls, out)
+fn reverse_list_rec<T>(mut ls: LinkedList<T>, mut out: LinkedList<T>) -> LinkedList<T> {
+    if ls.is_empty() {
+        return out;
     }
+    out.push_front(ls.pop_front().unwrap());
+    reverse_list_rec(ls, out)
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
-    use std::collections::{VecDeque};
+    use std::collections::VecDeque;
 
     #[test]
     fn elist_reverse() {
@@ -112,19 +157,15 @@ mod test {
     }
 
     #[test]
-    fn reverse_custom_list() {
-        let head = Node::from([1, 2, 3]);
-        let mut ptr = &head;
-        ptr = {
-            let ref this = head.next;
-            unsafe { &mut *this.as_ptr() }
-        };
+    fn node_list_reverse() {
+        let mut ls = NodeList::from([1, 2, 3]);
+        assert_eq!(vec![3, 2, 1], ls.reverse().to_vec())
     }
 
     #[test]
-    fn reverse_list_rec() {
+    fn linked_list_reverse_recursive() {
         let ls = LinkedList::from([1, 2, 3, 4]);
-        let target = Solution::reverse_list_rec(ls, LinkedList::new());
+        let target = reverse_list_rec(ls, LinkedList::new());
 
         let res = target.iter().fold(vec![], |mut v: Vec<_>, e| {
             v.push(*e);
@@ -134,7 +175,7 @@ mod test {
     }
 
     #[test]
-    fn reverse_list_rfold() {
+    fn linked_list_reverse_rfold() {
         let ls = LinkedList::from([1, 2, 3, 4, 5]);
 
         let rf = |mut acc: LinkedList<_>, el| {
@@ -151,7 +192,7 @@ mod test {
     }
 
     #[test]
-    fn reverse_deque() {
+    fn deque_reverse() {
         let mut xs = VecDeque::from([1, 2, 3, 4]);
         let (mut l, mut r) = (0, xs.len() - 1);
         while l < r {
