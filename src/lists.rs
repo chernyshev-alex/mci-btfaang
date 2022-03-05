@@ -1,4 +1,3 @@
-
 use std::collections::LinkedList;
 use std::ptr;
 
@@ -145,10 +144,80 @@ fn reverse_list_rec<T>(mut ls: LinkedList<T>, mut out: LinkedList<T>) -> LinkedL
     reverse_list_rec(ls, out)
 }
 
+//  Leetcode : https://leetcode.com/problems/reverse-linked-list-ii/
+
+#[derive(PartialEq, Eq, Clone, Debug)]
+pub struct ListNode {
+    pub val: i32,
+    pub next: Option<Box<ListNode>>,
+}
+
+impl ListNode {
+    #[inline]
+    fn new(val: i32) -> Self {
+        ListNode { next: None, val }
+    }
+}
+
+struct Solution;
+impl Solution {
+
+    pub fn reverse_between(head: Option<Box<ListNode>>, left: i32, right: i32) -> Option<Box<ListNode>> {
+
+        let mut dm = Some(Box::new(ListNode { val: 0, next: head }));
+        let mut dm_mut = dm.as_mut();
+
+        let mut pos = 0;
+        let mut rev = None;
+        while let Some(node) = dm_mut {
+            pos += 1;
+
+            while pos >= left && pos <= right {
+                let mut next = node.next.take();
+                node.next = next.as_mut().unwrap().next.take();
+                next.as_mut().unwrap().next = rev.take();
+                if pos < right {
+                    rev = next
+                } else {
+                    let mut rev_mut = next.as_mut();
+                    while let Some(rev_node) = rev_mut {
+                        if rev_node.next.is_none() {
+                            rev_node.next = node.next.take();
+                            break;
+                        }
+                        rev_mut = rev_node.next.as_mut();
+                    }
+                    node.next = next;
+                }
+
+                pos += 1;
+            }
+            dm_mut = node.next.as_mut();
+        }
+        dm.unwrap().next
+    }
+
+ 
+}
 #[cfg(test)]
 mod test {
     use super::*;
     use std::collections::VecDeque;
+    
+    //
+    //  https://leetcode.com/problems/reverse-linked-list-ii/
+    //
+    #[test]
+    fn leetcode_reverse_between() {
+        let mut v = [5, 4, 3, 2, 1];
+        let ls = v.iter_mut().map(|e| Box::new(ListNode::new(*e))).reduce(
+            |a: Box<ListNode>, mut e: Box<ListNode>| -> Box<ListNode> {
+                e.next = Some(a);
+                e
+            },
+        );
+        Solution::reverse_between(ls, 2, 4);
+    }
 
     #[test]
     fn elist_reverse() {
