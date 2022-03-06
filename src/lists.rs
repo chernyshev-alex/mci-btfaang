@@ -1,4 +1,5 @@
 use std::collections::LinkedList;
+use std::fmt::write;
 use std::ptr;
 
 // --------- Simple Enum based list --------------- //
@@ -161,9 +162,11 @@ impl ListNode {
 
 struct Solution;
 impl Solution {
-
-    pub fn reverse_between(head: Option<Box<ListNode>>, left: i32, right: i32) -> Option<Box<ListNode>> {
-
+    pub fn reverse_between(
+        head: Option<Box<ListNode>>,
+        left: i32,
+        right: i32,
+    ) -> Option<Box<ListNode>> {
         let mut dm = Some(Box::new(ListNode { val: 0, next: head }));
         let mut dm_mut = dm.as_mut();
 
@@ -196,14 +199,12 @@ impl Solution {
         }
         dm.unwrap().next
     }
-
- 
 }
 #[cfg(test)]
 mod test {
     use super::*;
     use std::collections::VecDeque;
-    
+
     //
     //  https://leetcode.com/problems/reverse-linked-list-ii/
     //
