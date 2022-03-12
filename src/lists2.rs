@@ -1,5 +1,10 @@
 use super::*;
-use std::collections::{HashSet, VecDeque};
+use std::{
+    borrow::Borrow,
+    cell::RefCell,
+    collections::{HashSet, VecDeque},
+    rc::Rc,
+};
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Vertex(i32);
@@ -51,46 +56,60 @@ impl From<(i32, i32)> for Edge {
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct ListNode {
     pub val: i32,
-    pub next: Option<Box<ListNode>>,
+    pub next: Option<Rc<RefCell<ListNode>>>,
+}
+
+fn print_list(ls : Option<Rc<RefCell<ListNode>>>) {
+    let mut tortoise =  ls;
+    loop {
+        if tortoise.is_none() {
+            return
+        }
+        println!("++++ {:?}", tortoise);
+        tortoise = tortoise.unwrap().borrow_mut().next.clone();
+    }
 }
 
 impl ListNode {
     #[inline]
     fn new(val: i32) -> Self {
-        ListNode { next: None, val }
+        Self { next: None, val }
     }
 
-    fn list_detect_cycle_floyd(head: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
-        let (mut tortoise, mut hare) = (head.as_ref(), head.as_ref());
+    fn list_detect_cycle_floyd(
+        head: Option<Rc<RefCell<ListNode>>>,
+    ) -> Option<Rc<RefCell<ListNode>>> {
+        let (mut tortoise, mut hare) = (head.borrow().clone(), head.borrow().clone());
+
         loop {
-            tortoise = tortoise.unwrap().next.as_ref();
-            hare = hare.unwrap().next.as_ref();
+            if tortoise.is_none() || hare.is_none() {
+                // TODO rem dups
+                return None;
+            }
+            tortoise = tortoise.unwrap().borrow_mut().next.clone();
+            hare = hare.unwrap().borrow_mut().next.clone();
 
             if tortoise.is_none() || hare.is_none() {
                 return None;
             } else {
-                hare = hare.unwrap().next.as_ref();
+                hare = hare.unwrap().borrow_mut().next.clone();
             }
             if tortoise == hare {
                 break;
             }
         }
-        let (mut p1, mut p2) = (head.as_ref(), tortoise);
-        while p1 != p2 {
-            p1 = p1.unwrap().next.as_ref();
-            p2 = p2.unwrap().next.as_ref();
+        let mut begin = head.borrow().clone();
+        while begin != tortoise {
+            begin = begin.unwrap().borrow_mut().next.clone();
+            tortoise = tortoise.unwrap().borrow_mut().next.clone();
         }
-        Some(Box::new(ListNode::new(p2.unwrap().val)))
+        tortoise
     }
 }
 #[cfg(test)]
 mod test {
     use super::*;
-    use std::{
-        collections::VecDeque,
-        ops::DerefMut,
-        ptr::{self, null},
-    };
+    use std::{borrow::BorrowMut};
     //
     // https://leetcode.com/problems/linked-list-cycle-ii/
     //
@@ -102,22 +121,40 @@ mod test {
             vertices.into_iter().map(|v| v.into()).collect(),
             edges.into_iter().map(|e| e.into()).collect(),
         );
-
         let result = g.detect_cycle();
         assert_eq!(result, (true, Some(Edge(2, 1))));
     }
 
     #[test]
     fn list_detect_cycle_floyd() {
-        let mut v = [-4, 0, 2, 3];
-        let mut ls = v.iter_mut().map(|e| Box::new(ListNode::new(*e))).reduce(
-            |a: Box<ListNode>, mut e: Box<ListNode>| -> Box<ListNode> {
-                e.next = Some(a);
-                e
-            },
-        );
-        // TODO : make cycle 
+        let v = [-4, 0, 2, 3];
+        // reverse & link nodes
+        let mut ls = v.iter()
+            .map(|e| Rc::new(RefCell::new(ListNode::new(*e))))
+            .reduce(|acc,  el| {
+               el.replace_with(|a| {
+                let mut e1 = ListNode::new(a.val);
+                e1.next = Some(acc);
+                e1 });
+                return el;
+        });
 
-        ListNode::list_detect_cycle_floyd(ls);
+        //  make cycle  -4 -> 2
+        let mut curr = ls.borrow_mut().clone();
+        let mut ref_to = curr.clone();
+        while let Some(ref mut node) = curr.clone() {
+          let mut v = node.as_ref().borrow_mut();
+          if v.val == 2 {
+            ref_to = Some(node.clone()); 
+          }
+          if v.val == -4  {
+            v.next = ref_to.clone();
+            break;
+          }
+          curr = v.next.clone();
+        }
+        let result = ListNode::list_detect_cycle_floyd(ls);
+        let cycle_node = result.unwrap().as_ref().borrow().val;
+        assert_eq!(2, cycle_node);
     }
 }
