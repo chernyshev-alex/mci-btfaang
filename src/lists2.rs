@@ -52,22 +52,11 @@ impl From<(i32, i32)> for Edge {
     }
 }
 
-// ====
+// ==== list allowed cycle ===== 
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct ListNode {
     pub val: i32,
     pub next: Option<Rc<RefCell<ListNode>>>,
-}
-
-fn print_list(ls : Option<Rc<RefCell<ListNode>>>) {
-    let mut tortoise =  ls;
-    loop {
-        if tortoise.is_none() {
-            return
-        }
-        println!("++++ {:?}", tortoise);
-        tortoise = tortoise.unwrap().borrow_mut().next.clone();
-    }
 }
 
 impl ListNode {
@@ -76,11 +65,8 @@ impl ListNode {
         Self { next: None, val }
     }
 
-    fn list_detect_cycle_floyd(
-        head: Option<Rc<RefCell<ListNode>>>,
-    ) -> Option<Rc<RefCell<ListNode>>> {
+    fn list_detect_cycle_floyd(head: Option<Rc<RefCell<ListNode>>>) -> Option<Rc<RefCell<ListNode>>> {
         let (mut tortoise, mut hare) = (head.borrow().clone(), head.borrow().clone());
-
         loop {
             if tortoise.is_none() || hare.is_none() {
                 // TODO rem dups
