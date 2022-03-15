@@ -4,7 +4,7 @@ mod strs;
 mod lists;
 mod lists2;
 mod stacks;
-mod sorting;
+mod search;
 
 fn main() { 
 
