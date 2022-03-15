@@ -52,30 +52,57 @@ pub fn find_kth_largest_qselect(mut nums: Vec<i32>, k: usize) -> i32 {
 }
 
 pub fn search_range(nums: Vec<i32>, target: i32) -> Vec<i32> {
-    fn binary_search(v: Vec<i32>, mut l : usize, mut r : usize, target : i32) -> i32 {
+    fn binary_search(v: &Vec<i32>, mut l : i32, mut r : i32, target : i32) -> i32 {
         while l <= r {
             let mid  = (r + l) /2;
-            let mid_val = v[mid];
+            let mid_val = v[mid as usize];
             match mid_val {
-                _ if target < mid_val => r = mid, 
-                _ if target > mid_val => l = mid,
+                _ if mid_val < target => l = mid +1,  
+                _ if mid_val > target => r = mid -1,
                 _  => return mid as i32
             }
         }
         -1
     }
 
-    let no_result = vec![-1, -1];
+    let (mut first_pos, mut second_pos) = (-1, -1);
     if nums.is_empty() {
-        return no_result;
+        return vec![first_pos, second_pos];
     }
-    let r = nums.len();
-    let first_pos = binary_search(nums, 0, r -1, target);
-    if first_pos == -1 {
-        return no_result;
+    if nums.len() == 1  {
+        if nums[0] == target {
+            return vec![0, 0];
+        } else {
+            return vec![-1, -1];
+        }
     }
 
-    no_result
+    let r = nums.len();
+    first_pos = binary_search(&nums, 0, (r-1) as i32 , target);
+    if first_pos == -1 {
+        return vec![first_pos, second_pos];
+    }   
+
+    let (mut end_pos, mut start_pos) = (first_pos, first_pos);
+    let (mut t1, mut t2) = (-1, -1);
+
+    while start_pos != -1 {
+        t1 = start_pos;
+        if start_pos  > 0 {
+            start_pos = binary_search(&nums, 0, start_pos -1, target);
+        } else {
+            start_pos = -1;
+        }
+    }
+    start_pos = t1;
+
+    while end_pos != -1 {
+        t2 = end_pos;
+        end_pos = binary_search(&nums,end_pos + 1 , (nums.len()-1) as i32, target);
+    }
+    end_pos =  t2;
+    
+    vec![start_pos, end_pos]
 }
 
 #[cfg(test)]
@@ -99,6 +126,14 @@ mod test {
     // nlogN
     #[test]
     fn search_range_test() {
+        assert_eq!(vec![-1, -1], search_range(vec![2,2], 1));
+        assert_eq!(vec![-1, -1], search_range(vec![1], 0));
         assert_eq!(vec![3,4], search_range(vec![5,7,7,8,8,10], 8));
+        assert_eq!(vec![1, 1], search_range(vec![1, 4], 4));
+        assert_eq!(vec![0,0], search_range(vec![1, 3], 1));
+        assert_eq!(vec![0,0], search_range(vec![1], 1));
+        assert_eq!(vec![-1,-1], search_range(vec![5,7,7,8,8,10], 6));
+        assert_eq!(vec![-1,-1], search_range(vec![], 0));
+        assert_eq!(vec![0,1], search_range(vec![2,2], 2));
     } 
 }
