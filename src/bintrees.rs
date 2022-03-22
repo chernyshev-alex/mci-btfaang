@@ -93,7 +93,7 @@ pub fn right_side_view_bfs(root: Option<Rc<RefCell<TreeNode>>>) -> Vec<i32> {
 }
 
 pub fn right_side_view_dfs(root: Option<Rc<RefCell<TreeNode>>>) -> Vec<i32> {
-    fn dfs(node: Option<Rc<RefCell<TreeNode>>>, level: usize, v:  &mut Vec<i32>) -> &Vec<i32> {
+    fn dfs(node: Option<Rc<RefCell<TreeNode>>>, level: usize, v: &mut Vec<i32>) -> &Vec<i32> {
         if let Some(n) = node {
             let x = n.as_ref().borrow();
             if level >= v.len() {
@@ -101,17 +101,19 @@ pub fn right_side_view_dfs(root: Option<Rc<RefCell<TreeNode>>>) -> Vec<i32> {
             }
             dfs(x.right.clone(), level + 1, v);
             dfs(x.left.clone(), level + 1, v);
-        } 
+        }
         v
     }
     dfs(root, 0, &mut vec![]).to_vec()
 }
 
 pub fn count_nodes_rec(root: Option<Rc<RefCell<TreeNode>>>) -> i32 {
-    if root.is_none() { return 0; }
+    if root.is_none() {
+        return 0;
+    }
     return count_nodes_rec(root.clone().unwrap().as_ref().borrow().left.clone())
-            + count_nodes_rec(root.clone().unwrap().as_ref().borrow().right.clone())
-            + 1
+        + count_nodes_rec(root.clone().unwrap().as_ref().borrow().right.clone())
+        + 1;
 }
 
 pub fn count_nodes(root: Option<Rc<RefCell<TreeNode>>>) -> i32 {
@@ -120,7 +122,7 @@ pub fn count_nodes(root: Option<Rc<RefCell<TreeNode>>>) -> i32 {
         while let Some(rc) = node {
             let b = rc.as_ref().borrow();
             if b.left.is_some() {
-                h +=1;
+                h += 1;
             }
             node = b.left.clone();
         }
@@ -128,20 +130,20 @@ pub fn count_nodes(root: Option<Rc<RefCell<TreeNode>>>) -> i32 {
     }
 
     fn node_exists(idx: i32, h: i32, mut node: Option<Rc<RefCell<TreeNode>>>) -> bool {
-        let (mut l , mut r , mut count) = (0, 2_i32.pow(h as u32) -1, 0);
-        while count < h  {
-            let mid = f32::ceil((l+r) as f32 / 2.0) as i32;
+        let (mut l, mut r, mut count) = (0, 2_i32.pow(h as u32) - 1, 0);
+        while count < h {
+            let mid = f32::ceil((l + r) as f32 / 2.0) as i32;
             if let Some(n) = node {
-                let b  = n.as_ref().borrow();
-                if idx  >= mid {
-                    node = b.right.clone(); 
+                let b = n.as_ref().borrow();
+                if idx >= mid {
+                    node = b.right.clone();
                     l = mid;
                 } else {
-                    node = b.left.clone();  
-                    r  = mid -1;
+                    node = b.left.clone();
+                    r = mid - 1;
                 }
             }
-            count += 1;     
+            count += 1;
         }
         return node.is_some();
     }
@@ -153,133 +155,167 @@ pub fn count_nodes(root: Option<Rc<RefCell<TreeNode>>>) -> i32 {
     let src_root = root.clone();
 
     let h = tree_height(root);
-    if h  == 0 { return  1 } 
-    
-    let upper_count = 2_i32.pow(h as u32) -1;
+    if h == 0 {
+        return 1;
+    }
+
+    let upper_count = 2_i32.pow(h as u32) - 1;
     let (mut l, mut r) = (0, upper_count);
     while l < r {
-        let idx_find = f32::ceil((l+r) as f32 / 2.0) as i32;
-        if node_exists(idx_find , h, src_root.clone()) {
+        let idx_find = f32::ceil((l + r) as f32 / 2.0) as i32;
+        if node_exists(idx_find, h, src_root.clone()) {
             l = idx_find;
         } else {
-            r = idx_find -1;
+            r = idx_find - 1;
         }
     }
     return upper_count + l + 1;
 }
 
 pub fn is_valid_bst(root: Option<Rc<RefCell<TreeNode>>>) -> bool {
-    false
+    fn dfs(node: Option<Rc<RefCell<TreeNode>>>, min: i32, max: i32) -> bool {
+        if let Some(rc) = node {
+            let n = rc.as_ref().borrow();
+            if n.val <= min || n.val >= max {
+                return false;
+            }
+            if n.left.is_some() {   
+                if !dfs(n.left.clone(), min, n.val) {
+                    return false;
+                }
+            }
+            if n.right.is_some() {
+                if !dfs(n.right.clone(), n.val, max) {
+                    return false;
+                }
+            }
+        }
+        true
+    }
+
+    if root.is_none() {
+        return true;
+    }
+    dfs(root, i32::MIN, i32::MAX)
 }
 
 #[cfg(test)]
 
-    fn leetcode_level_order_tree() -> Option<Rc<RefCell<TreeNode>>> {
-        Some(Rc::new(RefCell::new(TreeNode {
-            val: 3,
+fn leetcode_level_order_tree() -> Option<Rc<RefCell<TreeNode>>> {
+    Some(Rc::new(RefCell::new(TreeNode {
+        val: 3,
+        left: Some(Rc::new(RefCell::new(TreeNode {
+            val: 9,
+            left: None,
+            right: None,
+        }))),
+        right: Some(Rc::new(RefCell::new(TreeNode {
+            val: 20,
             left: Some(Rc::new(RefCell::new(TreeNode {
-                val: 9,
+                val: 15,
+                left: None,
+                right: None,
+            }))),
+            right: Some(Rc::new(RefCell::new(TreeNode {
+                val: 7,
+                left: None,
+                right: None,
+            }))),
+        }))),
+    })))
+}
+
+fn leetcode_tree_test() -> Option<Rc<RefCell<TreeNode>>> {
+    Some(Rc::new(RefCell::new(TreeNode {
+        val: 1,
+        left: Some(Rc::new(RefCell::new(TreeNode {
+            val: 2,
+            left: Some(Rc::new(RefCell::new(TreeNode {
+                val: 5,
+                left: None,
+                right: None,
+            }))),
+            right: None,
+        }))),
+        right: Some(Rc::new(RefCell::new(TreeNode {
+            val: 3,
+            left: None,
+            right: Some(Rc::new(RefCell::new(TreeNode {
+                val: 4,
+                left: None,
+                right: None,
+            }))),
+        }))),
+    })))
+}
+
+fn leetcode_tree_test2() -> Option<Rc<RefCell<TreeNode>>> {
+    Some(Rc::new(RefCell::new(TreeNode {
+        val: 3,
+        left: Some(Rc::new(RefCell::new(TreeNode {
+            val: 9,
+            left: None,
+            right: None,
+        }))),
+        right: Some(Rc::new(RefCell::new(TreeNode {
+            val: 20,
+            left: Some(Rc::new(RefCell::new(TreeNode {
+                val: 15,
                 left: None,
                 right: None,
             }))),
             right: Some(Rc::new(RefCell::new(TreeNode {
                 val: 20,
-                left: Some(Rc::new(RefCell::new(TreeNode {
-                    val: 15,
-                    left: None,
-                    right: None,
-                }))),
-                right: Some(Rc::new(RefCell::new(TreeNode {
-                    val: 7,
-                    left: None,
-                    right: None,
-                }))),
+                left: None,
+                right: None,
             }))),
-        })))
-    }
+        }))),
+    })))
+}
 
-    fn leetcode_tree_test() -> Option<Rc<RefCell<TreeNode>>> {
-        Some(Rc::new(RefCell::new(TreeNode {
+fn valid_tree() -> Option<Rc<RefCell<TreeNode>>> {
+    Some(Rc::new(RefCell::new(TreeNode {
+        val: 2,
+        left: Some(Rc::new(RefCell::new(TreeNode {
             val: 1,
+            left: None,
+            right: None,
+        }))),
+        right: Some(Rc::new(RefCell::new(TreeNode {
+            val: 3,
+            left: None,
+            right: None,
+        }))),
+    })))
+}
+
+fn count_tree_test() -> Option<Rc<RefCell<TreeNode>>> {
+    Some(Rc::new(RefCell::new(TreeNode {
+        val: 1,
+        left: Some(Rc::new(RefCell::new(TreeNode {
+            val: 2,
             left: Some(Rc::new(RefCell::new(TreeNode {
-                val: 2,
-                left: Some(Rc::new(RefCell::new(TreeNode {
-                    val: 5,
-                    left: None,
-                    right: None,
-                }))),
+                val: 4,
+                left: None,
                 right: None,
             }))),
             right: Some(Rc::new(RefCell::new(TreeNode {
-                val: 3,
+                val: 5,
                 left: None,
-                right: Some(Rc::new(RefCell::new(TreeNode {
-                    val: 4,
-                    left: None,
-                    right: None,
-                }))),
+                right: None,
             }))),
-        })))
-    }
-
-    fn leetcode_tree_test2() -> Option<Rc<RefCell<TreeNode>>> {
-        Some(Rc::new(RefCell::new(TreeNode {
+        }))),
+        right: Some(Rc::new(RefCell::new(TreeNode {
             val: 3,
             left: Some(Rc::new(RefCell::new(TreeNode {
-                val: 9,
+                val: 6,
                 left: None,
                 right: None,
             }))),
-            right: Some(Rc::new(RefCell::new(TreeNode {
-                val: 20,
-                left: Some(Rc::new(RefCell::new(TreeNode {
-                    val: 15,
-                    left: None,
-                    right: None,
-                }))),
-                right: Some(Rc::new(RefCell::new(TreeNode {
-                    val: 20,
-                    left: None,
-                    right: None,
-                }))),
-            }))),
-        })))
-    }
-
-    fn valid_tree() -> Option<Rc<RefCell<TreeNode>>> { 
-        Some(Rc::new(RefCell::new(TreeNode { val: 2,
-            left: Some(Rc::new(RefCell::new(TreeNode { val: 1, left: None, right: None, }))),
-            right: Some(Rc::new(RefCell::new(TreeNode { val: 3, left: None, right: None, }))),
-        })))
-    }
-
-    fn count_tree_test() -> Option<Rc<RefCell<TreeNode>>> { 
-        Some(Rc::new(RefCell::new(TreeNode {
-            val: 1,
-            left: Some(Rc::new(RefCell::new(TreeNode {
-                val: 2,
-                left: Some(Rc::new(RefCell::new(TreeNode {
-                    val: 4,
-                    left: None,
-                    right: None,
-                }))),
-                right: Some(Rc::new(RefCell::new(TreeNode {
-                    val: 5,
-                    left: None,
-                    right: None,
-                }))),
-            }))),
-            right: Some(Rc::new(RefCell::new(TreeNode {
-                val: 3,
-                left: Some(Rc::new(RefCell::new(TreeNode {
-                    val: 6,
-                    left: None,
-                    right: None,
-                }))),
-                right: None,
-            }))),
-        })))
-    }
+            right: None,
+        }))),
+    })))
+}
 
 mod test {
     use super::*;
@@ -293,7 +329,10 @@ mod test {
     // https://leetcode.com/problems/binary-tree-level-order-traversal/
     #[test]
     fn level_order_test() {
-        assert_eq!(vec![vec![3], vec![9, 20], vec![15, 7]], level_order(leetcode_level_order_tree()));
+        assert_eq!(
+            vec![vec![3], vec![9, 20], vec![15, 7]],
+            level_order(leetcode_level_order_tree())
+        );
     }
 
     // https://leetcode.com/problems/binary-tree-right-side-view/
