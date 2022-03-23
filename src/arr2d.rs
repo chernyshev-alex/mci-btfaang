@@ -82,20 +82,19 @@ struct Edge {
 // Dijkstra's shortest path algorithm -----
 fn shortest_path(adj_list: &Vec<Vec<Edge>>, start: usize, goal: usize) -> Option<usize> {
     let mut dist: Vec<_> = (0..adj_list.len()).map(|_| usize::MAX).collect();
-    let mut heap = BinaryHeap::new();
+    let mut min_heap = BinaryHeap::new();
 
     dist[start] = 0;
-    heap.push(State { cost: 0, position: start, });
+    min_heap.push(State { cost: 0, position: start, });
     // min-heap
-    while let Some(State { cost, position }) = heap.pop() {
+    while let Some(State { cost, position }) = min_heap.pop() {
       if position == goal { return Some(cost); }
       if cost > dist[position] { continue; }
 
       for edge in &adj_list[position] {
         let next = State { cost: cost + edge.cost, position: edge.node };
-        
         if next.cost < dist[next.position] {
-          heap.push(next);
+          min_heap.push(next);
           dist[next.position] = next.cost;
         }
       }
@@ -131,7 +130,7 @@ mod test {
       let graph = vec![
           vec![Edge { node: 2, cost: 10 }, Edge { node: 1, cost: 1 }],
           vec![Edge { node: 3, cost: 2 }],
-          vec![Edge { node: 1, cost: 1 }, Edge { node: 3, cost: 3 }, Edge { node: 4, cost: 1 },],
+          vec![Edge { node: 1, cost: 2 }, Edge { node: 3, cost: 3 }, Edge { node: 4, cost: 1 },],
           vec![Edge { node: 0, cost: 7 }, Edge { node: 4, cost: 2 }],
           vec![],];
 
