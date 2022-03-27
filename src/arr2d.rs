@@ -1,12 +1,12 @@
 use std::{
     cmp::Ordering,
-    collections::{BinaryHeap, VecDeque},
+    collections::{BinaryHeap, HashSet, VecDeque},
 };
 
 fn directions() -> Vec<Vec<i32>> {
     vec![vec![-1, 0], vec![0, 1], vec![1, 0], vec![0, -1]]
 }
-  
+
 fn traversal_dfs(v: &Vec<Vec<i32>>) {
     fn dfs(
         m: &Vec<Vec<i32>>,
@@ -208,6 +208,81 @@ fn oranges_rotting(mut m: Vec<Vec<i32>>) -> i32 {
     mins
 }
 
+fn walls_and_gates(m: &mut Vec<Vec<i32>>) {
+    fn dfs(v: &mut Vec<Vec<i32>>, r: i32, c: i32, cur_value: i32) {
+        if r < 0
+            || c < 0
+            || r >= v.len() as i32
+            || c >= v[0].len() as i32
+            || cur_value > v[r as usize][c as usize]
+        {
+            return;
+        }
+        v[r as usize][c as usize] = cur_value;
+        for d in directions() {
+            dfs(v, r as i32 + d[0], c as i32 + d[1], cur_value + 1);
+        }
+    }
+
+    for r in 0..m.len() {
+        for c in 0..m[0].len() {
+            if m[r][c] == 0 {
+                dfs(m, r as i32, c as i32, 0);
+            }
+        }
+    }
+}
+
+fn transpose(m: Vec<Vec<i32>>) -> Vec<Vec<i32>> {
+    let mut tr = vec![vec![0; m.len()]; m[0].len()];
+    for r in 0..m.len() {
+        for c in 0..m[0].len() {
+            tr[c][r] = m[r][c];
+        }
+    }
+    tr
+}
+
+fn set_zeroes(m: &mut Vec<Vec<i32>>) {
+    let (mut rows, mut cols) = (HashSet::<i32>::new(), HashSet::<i32>::new());
+    for r in 0..m.len() {
+        for c in 0..m[0].len() {
+            if m[r][c] == 0 {
+                rows.insert(r as i32);
+                cols.insert(c as i32);
+            }
+        }
+    }
+    for r in 0..m.len() {
+        for c in 0..m[0].len() {
+            if rows.contains(&(r as i32)) || cols.contains(&(c as i32)) {
+                m[r][c] = 0;
+            }
+        }
+    }
+}
+
+fn search_matrix(m: Vec<Vec<i32>>, target: i32) -> bool {
+  let (mut l, mut r) = (0, m.len() * m[0].len());
+  while l <= r {
+      let mid = (l + r) / 2;
+      let (row, col) = (mid / m[0].len(), mid % m[0].len());
+      if row >= m.len() || col >= m[0].len() {
+        break;
+      }
+      if m[row][col] == target {
+          return true;
+      }
+      if target < m[row][col] {
+        if mid == 0 { break; }
+          r = mid - 1;
+      } else {
+          l = mid + 1;
+      }
+  }
+  false
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -266,9 +341,60 @@ mod test {
     fn oranges_rotting_test() {
         let m = vec![vec![2, 1, 1], vec![1, 1, 0], vec![0, 1, 1]];
         assert_eq!(4, oranges_rotting(m));
-        let m =  vec![vec![2,1,1], vec![0,1,1], vec![1,0,1]];
+        let m = vec![vec![2, 1, 1], vec![0, 1, 1], vec![1, 0, 1]];
         assert_eq!(-1, oranges_rotting(m));
-        let m =  vec![vec![0,2]];
+        let m = vec![vec![0, 2]];
         assert_eq!(0, oranges_rotting(m));
+    }
+
+    #[test]
+    // Given 2d array containing  -1 - walls, 0-gates, INF - empty room.
+    // Fill each empty rooom with a number of steps to the nearest gate.
+    // Leave INF if it is impossible to reach a gate.
+    fn walls_and_gates_test() {
+        const INF: i32 = 2147483647;
+        let mut m = vec![
+            vec![INF, -1, 0, INF],
+            vec![INF, INF, INF, 0],
+            vec![INF, -1, INF, -1],
+            vec![0, -1, INF, INF],
+        ];
+        walls_and_gates(&mut m);
+    }
+
+    // https://leetcode.com/problems/transpose-matrix/
+
+    #[test]
+    fn transpose_test() {
+        let mut m = vec![vec![1, 2, 3], vec![4, 5, 6], vec![7, 8, 9]];
+        assert_eq!(
+            vec![vec![1, 4, 7], vec![2, 5, 8], vec![3, 6, 9]],
+            transpose(m)
+        );
+    }
+
+    // https://leetcode.com/problems/set-matrix-zeroes/
+
+    #[test]
+    fn set_zeroes_test() {
+        let mut m = vec![vec![1, 1, 1], vec![1, 0, 1], vec![1, 1, 1]];
+        set_zeroes(&mut m);
+        assert_eq!(vec![vec![1, 0, 1], vec![0, 0, 0], vec![1, 0, 1]], m);
+        let mut m = vec![vec![0, 1, 2, 0], vec![3, 4, 5, 2], vec![1, 3, 1, 5]];
+        set_zeroes(&mut m);
+        assert_eq!(
+            vec![vec![0, 0, 0, 0], vec![0, 4, 5, 0], vec![0, 3, 1, 0]],
+            m
+        );
+    }
+
+    #[test]
+    fn search_matrix_test() {
+        let m = vec![vec![1, 3, 5, 7], vec![10, 11, 16, 20], vec![23, 30, 34, 60]];
+        assert_eq!(true, search_matrix(m, 23));
+        let m = vec![vec![1, 2, 3, 4, 5]];
+        assert_eq!(true, search_matrix(m, 4));
+        let m = vec![vec![1]];
+        assert_eq!(false, search_matrix(m, 2));
     }
 }
