@@ -8,6 +8,7 @@ mod search;
 mod bintrees;
 mod heaps;
 mod arr2d;
+mod graph;
 
 fn main() { 
 
