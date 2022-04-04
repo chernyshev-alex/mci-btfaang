@@ -1,4 +1,4 @@
-use std::{collections::{VecDeque, HashSet}};
+use std::{collections::{VecDeque, HashSet, BinaryHeap}};
 
 fn traversal_bfs(m : Vec<Vec<i32>>) -> Vec<i32> {
     let (mut seen, mut values) = (HashSet::<i32>::new(), vec![0;0]);
@@ -158,6 +158,34 @@ fn can_finish_opt_tsort(num_courses: i32, prerequisites: Vec<Vec<i32>>) -> bool 
   count == num_courses
 }
 
+fn network_delay_dejkstra_time(times: Vec<Vec<i32>>, n: i32, k: i32) -> i32 {
+  let mut dist = vec![std::usize::MAX; n as usize];
+  let mut adj_lst = vec![vec![(0usize, 0usize);0]; n as usize];
+  let mut heap = BinaryHeap::<usize>::new();
+
+  let from_idx = (k - 1) as usize;
+  dist[from_idx] = 0;
+
+  heap.push(from_idx);
+
+  for t in times.iter() {
+    let (from, to, w) = (t[0], t[1], t[2]);
+    let mut v = vec![((to-1) as usize, w as usize)];
+    adj_lst[(from-1) as usize].append(&mut v); 
+  }
+
+  while let Some(v_idx) = heap.pop() {
+    for (to, w) in &adj_lst[v_idx] {
+      if dist[v_idx] + *w < dist[*to] {
+        dist[*to] = dist[v_idx as usize] + w;
+        heap.push(*to);
+      }     
+    }
+  }
+  let res = dist.iter().max();
+  res.map(|val| -> i32 {if *val == std::usize::MAX { -1 } else { *val as i32 }}).unwrap()
+}
+
 #[cfg(test)]
 mod test {
 
@@ -277,5 +305,17 @@ mod test {
       assert_eq!(false, result);
       let result = can_finish_opt_tsort(2, vec![vec![0,1]]);
       assert_eq!(true, result);
+    }
+
+    // https://leetcode.com/problems/network-delay-time/
+
+    #[test] 
+    fn network_delay_time_dejkstra_test() {
+      let result = network_delay_dejkstra_time(vec![vec![2,1,1],vec![2,3,1],vec![3,4,1]], 4, 2);
+      assert_eq!(2, result);
+      let result = network_delay_dejkstra_time(vec![vec![1,2,1]], 2, 1);
+      assert_eq!(1, result);
+      let result = network_delay_dejkstra_time(vec![vec![1,2,1]], 2, 2);
+      assert_eq!(-1, result);
     }
 }
