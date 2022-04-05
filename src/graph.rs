@@ -186,6 +186,23 @@ fn network_delay_dejkstra_time(times: Vec<Vec<i32>>, n: i32, k: i32) -> i32 {
   res.map(|val| -> i32 {if *val == std::usize::MAX { -1 } else { *val as i32 }}).unwrap()
 }
 
+fn network_delay_time_belman_ford(times: Vec<Vec<i32>>, n: i32, k: i32) -> i32 {
+  let mut dist = vec![std::i32::MAX; n as usize];
+  dist[(k - 1) as usize] = 0;
+  for i in 0..n-1 {
+    let mut count = 0;
+    for t in &times {
+      let (from, to, w) = (t[0], t[1], t[2]);
+      if dist[(from -1) as usize] + w < dist[to as usize] {
+        dist[(to -1) as usize] = dist[(from -1) as usize] + w;
+        count += 1;
+      }
+    }
+    if count == 0 { break }
+  }
+  let res = dist.iter().max();
+  res.map(|val| -> i32 { if *val == std::i32::MAX { -1 } else { *val } }).unwrap()
+}
 #[cfg(test)]
 mod test {
 
@@ -318,4 +335,13 @@ mod test {
       let result = network_delay_dejkstra_time(vec![vec![1,2,1]], 2, 2);
       assert_eq!(-1, result);
     }
+
+    #[test] 
+    fn network_delay_time_belman_ford_test() {
+      let v = vec![vec![1, 4, 2], vec![1, 2, 9], vec![4, 2, -4], 
+          vec![2, 5, -3], vec![4, 5, 6],vec![3, 2, 3], vec![5, 3, 7], vec![3, 1, 5]];
+      let result = network_delay_time_belman_ford(v, 5, 1);
+      assert_eq!(2, result);
+    }
+
 }
