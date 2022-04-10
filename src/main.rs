@@ -9,6 +9,7 @@ mod bintrees;
 mod heaps;
 mod arr2d;
 mod graph;
+mod dp;
 
 fn main() { 
 
