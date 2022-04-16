@@ -221,20 +221,16 @@ mod test {
 
     #[test]
     fn palindrome_partitioning_test() {
-        //assert_eq!(vec![vec!["a"]], partition("a".to_string()));
-        //assert_eq!(vec![vec!["a","a","b"], vec!["aa","b"]], partition("aab".to_string()));
-        assert_eq!(
-            vec![vec!["a", "b", "a"], vec!["aba"]],
-            partition("abadda".to_string())
-        );
+        assert_eq!(vec![vec!["a"]], partition("a".to_string()));
+        assert_eq!(vec![vec!["a","a","b"], vec!["aa","b"]], partition("aab".to_string()));
+
     }
 
     // https://leetcode.com/problems/n-queens/
 
     #[test]
     fn solve_n_queens_test() {
-        //assert_eq!(vec![vec!["Q...", "..Q"]], solve_n_queens(3));
-        //assert_eq!(vec![vec!["Q"]], solve_n_queens(1));
+        assert_eq!(vec![vec!["Q"]], solve_n_queens(1));
         assert_eq!(
             vec![
                 vec![".Q..", "...Q", "Q...", "..Q."],
