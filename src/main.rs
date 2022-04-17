@@ -11,6 +11,7 @@ mod arr2d;
 mod graph;
 mod dp;
 mod bt;
+mod monarchy;
 
 fn main() { 
 
