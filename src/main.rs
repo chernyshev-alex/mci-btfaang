@@ -12,6 +12,7 @@ mod graph;
 mod dp;
 mod bt;
 mod monarchy;
+mod tries;
 
 fn main() { 
 
