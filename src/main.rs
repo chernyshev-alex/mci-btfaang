@@ -13,6 +13,7 @@ mod dp;
 mod bt;
 mod monarchy;
 mod tries;
+mod euler;
 
 fn main() { 
 

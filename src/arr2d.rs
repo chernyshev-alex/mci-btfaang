@@ -174,16 +174,16 @@ fn oranges_rotting(mut m: Vec<Vec<i32>>) -> i32 {
     }
 
     let mut mins = 0;
-    let mut currentQueueSize = rotten.len() as i32;
+    let mut current_queue_size = rotten.len() as i32;
 
     while rotten.len() > 0 {
-        if currentQueueSize == 0 {
-            currentQueueSize = rotten.len() as i32;
+        if current_queue_size == 0 {
+            current_queue_size = rotten.len() as i32;
             mins += 1;
         }
 
         if let Some((row, col)) = rotten.pop_front() {
-            currentQueueSize -= 1;
+            current_queue_size -= 1;
 
             for d in directions() {
                 let (next_row, next_col) = (row as i32 + d[0], col as i32 + d[1]);

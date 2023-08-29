@@ -85,11 +85,35 @@ impl Solution {
       }
       true
     }
+
+    pub fn longest_common_prefix(ls: &[&str]) -> String {
+      for (i, &ch) in ls[0].as_bytes().iter().enumerate() {
+      for &s in &ls[1..] {
+          if s.as_bytes().get(i) != Some(&ch) {
+          return ls[0][..i].to_string()
+          }
+      }
+    }
+    "".to_string()
   }
+}
 
 #[cfg(test)]
 mod test {
   use crate::strs::Solution;
+
+  #[test]
+  fn longest_common_prefix_test() {
+    struct TS { input: Vec<&'static str>, expected: &'static str, }
+    let ts = vec![ 
+      TS { input : vec!["flower", "flow", "flight"], expected : "fl" },
+    ];
+
+    for (i, t) in ts.iter().enumerate() {
+      assert_eq!( Solution::longest_common_prefix(&t.input), 
+        t.expected, "Test case {} failed", i);
+    }
+  } 
 
   #[test]
   fn valid_palindrome_case1() {

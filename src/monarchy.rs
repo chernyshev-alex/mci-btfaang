@@ -48,7 +48,7 @@ impl Monarchy {
         p.as_ref().borrow_mut().is_alive = false;
         return;
       }
-      panic!();
+      panic!("somme error");
     }
 
     fn dfs(&self, from: Rc<RefCell<Person>>, result : &mut Vec<&str>) {
