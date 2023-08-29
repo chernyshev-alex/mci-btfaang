@@ -1,8 +1,7 @@
 pub struct Solution;
 impl Solution {
-  // https://leetcode.com/problems/backspace-string-compare/
 
-  pub fn backspace_compare(s: String, t: String) -> bool {
+  pub fn backspace_compare(s: &str, t : &str) -> bool {
     fn maybe_advance_iterator(
       it: &mut dyn Iterator<Item = char>,
       el: Option<char>,
@@ -43,7 +42,7 @@ impl Solution {
 
   // https://leetcode.com/problems/longest-substring-without-repeating-characters/
 
-  pub fn length_of_longest_substring_opt(s: String) -> i32 {
+  pub fn len_of_longest_substr_norepeat(s: &str) -> i32 {
     if s.len() <= 1 {
       return s.len() as i32;
     };
@@ -63,7 +62,7 @@ impl Solution {
 
   // https://leetcode.com/problems/valid-palindrome-ii/
 
-  pub fn valid_palindrome(s: String) -> bool {
+  pub fn valid_palindrome(s: &str) -> bool {
     fn is_palindrome(b: &[u8], mut l: usize, mut r: usize) -> bool {
       while l < r {
         if b[l] != b[r] {
@@ -86,7 +85,7 @@ impl Solution {
       true
     }
 
-    pub fn longest_common_prefix(ls: &[&str]) -> String {
+  pub fn longest_common_prefix(ls: &[&str]) -> String {
       for (i, &ch) in ls[0].as_bytes().iter().enumerate() {
       for &s in &ls[1..] {
           if s.as_bytes().get(i) != Some(&ch) {
@@ -110,85 +109,56 @@ mod test {
     ];
 
     for (i, t) in ts.iter().enumerate() {
-      assert_eq!( Solution::longest_common_prefix(&t.input), 
-        t.expected, "Test case {} failed", i);
+      assert_eq!( Solution::longest_common_prefix(&t.input), t.expected, "Failed {}", i);
     }
   } 
 
   #[test]
-  fn valid_palindrome_case1() {
-    let result = Solution::valid_palindrome("abc".to_string());
-    assert_eq!(result, false);
+  fn valid_palindrome() {
+    struct TS { input: &'static str, exp : bool}
+    let ts = vec![
+      TS{input: "abc", exp : false}, 
+      TS{input : "abca", exp : true}, 
+    ]; 
+    for (i, t) in ts.iter().enumerate() {
+        assert_eq!(Solution::valid_palindrome(t.input), t.exp, "Failed {}", i) 
+    }
   }
 
+  // https://leetcode.com/problems/longest-substring-without-repeating-characters/    
   #[test]
-  fn valid_palindrome_case2() {
-    let result = Solution::valid_palindrome("abca".to_string());
-    assert_eq!(result, true);
+  fn length_of_longest_substring_test() {
+    struct TS { input: &'static str, exp : i32}
+    let ts = vec![
+        TS{input: "dvdf", exp : 3}, 
+        TS{input: "abba", exp : 2},
+        TS{input: "bbb", exp : 1},
+        TS{input: "123", exp : 3},
+        TS{input: "au", exp : 2},
+        TS{input: "abcdabcdef", exp : 6},
+        TS{input: "pwwkew", exp : 3},
+        TS{input: " ", exp : 1},
+    ]; 
+
+    for (_, t) in ts.iter().enumerate() {
+          assert_eq!(Solution::len_of_longest_substr_norepeat(&t.input), 
+            t.exp, "Failed {}", t.input) 
+    }
   }
 
+  // https://leetcode.com/problems/backspace-string-compare/
   #[test]
-  fn length_of_longest_substring_case7() {
-    let result = Solution::length_of_longest_substring_opt("dvdf".to_string());
-    assert_eq!(result, 3);
+  fn backspace_compare_test() {
+    struct TS { input1: &'static str, input2: &'static str, exp : bool}
+    let ts = vec![
+        TS{input1: "nzp#o#g", input2 : "b#nzp#o#g" , exp : true}, 
+        TS{input1: "bbbextm", input2 : "bbb#extm" , exp : false}, 
+    ];
+
+    for (_, t) in ts.iter().enumerate() {
+          assert_eq!(Solution::backspace_compare(t.input1, t.input2),
+            t.exp, "Failed {} {}", t.input1, t.input2) 
+    }
   }
 
-  #[test]
-  fn length_of_longest_substring_case6() {
-    let result = Solution::length_of_longest_substring_opt("abba".to_string());
-    assert_eq!(result, 2);
-  }
-
-  #[test]
-  fn length_of_longest_substring_case5() {
-    let result = Solution::length_of_longest_substring_opt("bbb".to_string());
-    assert_eq!(result, 1);
-  }
-  #[test]
-  fn length_of_longest_substring_case4() {
-    let result = Solution::length_of_longest_substring_opt("123".to_string());
-    assert_eq!(result, 3);
-  }
-
-  #[test]
-  fn length_of_longest_substring_case4_1() {
-    let result = Solution::length_of_longest_substring_opt("au".to_string());
-    assert_eq!(result, 2);
-  }
-
-  #[test]
-  fn length_of_longest_substring_case3() {
-    let result = Solution::length_of_longest_substring_opt("abcabcbb".to_string());
-    assert_eq!(result, 3);
-  }
-
-  #[test]
-  fn length_of_longest_substring_case2() {
-    let result = Solution::length_of_longest_substring_opt("abcdabcdef".to_string());
-    assert_eq!(result, 6);
-  }
-
-  #[test]
-  fn length_of_longest_substring_case1() {
-    let result = Solution::length_of_longest_substring_opt(" ".to_string());
-    assert_eq!(result, 1);
-  }
-
-  #[test]
-  fn length_of_longest_substring_case0() {
-    let result = Solution::length_of_longest_substring_opt("pwwkew".to_string());
-    assert_eq!(result, 3);
-  }
-
-  #[test]
-  fn compare_test_let0() {
-    let result = Solution::backspace_compare("nzp#o#g".to_string(), "b#nzp#o#g".to_string());
-    assert_eq!(result, true);
-  }
-
-  #[test]
-  fn compare_test_let() {
-    let result = Solution::backspace_compare("bbbextm".to_string(), "bbb#extm".to_string());
-    assert_eq!(result, false);
-  }
 }
