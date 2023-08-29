@@ -1,48 +1,24 @@
 pub struct Solution;
 impl Solution {
 
-  pub fn backspace_compare(s: &str, t : &str) -> bool {
-    fn maybe_advance_iterator(
-      it: &mut dyn Iterator<Item = char>,
-      el: Option<char>,
-    ) -> Option<char> {
-      if el.is_some() && el.unwrap() == '#' {
-        let mut skip_cnt = 2;
-        let mut curr_element: Option<char> = None;
-        while skip_cnt > 0 {
-          skip_cnt -= 1;
-          curr_element = it.next();
-          if let Some(c) = curr_element {
-            if c == '#' {
-              skip_cnt += 2
-            }
+  fn backspace_compare(s1: &str, s2 : &str) -> bool {
+      fn process_str(s: &str) -> String {
+        let stack = &mut Vec::<char>::new();
+        for ch in s.chars() {
+          if ch != '#' {
+              stack.push(ch);
+          } else if !stack.is_empty() {
+              stack.pop();
           }
         }
-        return curr_element;
+        return stack.iter().collect()
       }
-      return el;
-    }
-
-    let (mut sv, mut tv) = (s.chars().rev(), t.chars().rev());
-    loop {
-      let (mut sv_elem, mut tv_elem) = (sv.next(), tv.next());
-      if sv_elem.is_none() && tv_elem.is_none() {
-        break;
-      }
-
-      sv_elem = maybe_advance_iterator(&mut sv, sv_elem);
-      tv_elem = maybe_advance_iterator(&mut tv, tv_elem);
-
-      if sv_elem.ne(&tv_elem) {
-        return false;
-      }
-    }
-    true
+    return process_str(s1) == process_str(s2)
   }
 
-  // https://leetcode.com/problems/longest-substring-without-repeating-characters/
+   // https://leetcode.com/problems/longest-substring-without-repeating-characters/
 
-  pub fn len_of_longest_substr_norepeat(s: &str) -> i32 {
+  fn len_of_longest_substr_norepeat(s: &str) -> i32 {
     if s.len() <= 1 {
       return s.len() as i32;
     };
@@ -62,7 +38,7 @@ impl Solution {
 
   // https://leetcode.com/problems/valid-palindrome-ii/
 
-  pub fn valid_palindrome(s: &str) -> bool {
+  fn valid_palindrome(s: &str) -> bool {
     fn is_palindrome(b: &[u8], mut l: usize, mut r: usize) -> bool {
       while l < r {
         if b[l] != b[r] {
@@ -151,8 +127,9 @@ mod test {
   fn backspace_compare_test() {
     struct TS { input1: &'static str, input2: &'static str, exp : bool}
     let ts = vec![
-        TS{input1: "nzp#o#g", input2 : "b#nzp#o#g" , exp : true}, 
-        TS{input1: "bbbextm", input2 : "bbb#extm" , exp : false}, 
+        TS{input1: "ab#c", input2 : "ad#c" , exp : true}, 
+        TS{input1: "ab##", input2 : "c#d#" , exp : true}, 
+        TS{input1: "a#c", input2 : "b" , exp : false}, 
     ];
 
     for (_, t) in ts.iter().enumerate() {
