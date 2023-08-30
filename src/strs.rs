@@ -16,7 +16,6 @@ impl Solution {
     return process_str(s1) == process_str(s2)
   }
 
-   // https://leetcode.com/problems/longest-substring-without-repeating-characters/
 
   fn len_of_longest_substr_norepeat(s: &str) -> i32 {
     if s.len() <= 1 {
@@ -36,9 +35,7 @@ impl Solution {
     result
   }
 
-  // https://leetcode.com/problems/valid-palindrome-ii/
-
-  fn valid_palindrome(s: &str) -> bool {
+  fn is_valid_palindrome_with_deletion_one(s: &str) -> bool {
     fn is_palindrome(b: &[u8], mut l: usize, mut r: usize) -> bool {
       while l < r {
         if b[l] != b[r] {
@@ -51,7 +48,7 @@ impl Solution {
     }
     
     let (mut l, mut r, b) = (0, s.len()-1, s.as_bytes());
-    while l < r {
+      while l < r {
         if b[l] != b[r] {
           return is_palindrome(b, l + 1, r) || is_palindrome(b, l, r - 1);
         }
@@ -79,62 +76,37 @@ mod test {
 
   #[test]
   fn longest_common_prefix_test() {
-    struct TS { input: Vec<&'static str>, expected: &'static str, }
-    let ts = vec![ 
-      TS { input : vec!["flower", "flow", "flight"], expected : "fl" },
-    ];
-
+    let ts = vec![(vec!["flower", "flow", "flight"],  "fl" )];
     for (i, t) in ts.iter().enumerate() {
-      assert_eq!( Solution::longest_common_prefix(&t.input), t.expected, "Failed {}", i);
+      assert_eq!( Solution::longest_common_prefix(&t.0), t.1, "Failed {}", i);
     }
   } 
 
+  // https://leetcode.com/problems/valid-palindrome-ii/
   #[test]
-  fn valid_palindrome() {
-    struct TS { input: &'static str, exp : bool}
-    let ts = vec![
-      TS{input: "abc", exp : false}, 
-      TS{input : "abca", exp : true}, 
-    ]; 
-    for (i, t) in ts.iter().enumerate() {
-        assert_eq!(Solution::valid_palindrome(t.input), t.exp, "Failed {}", i) 
+  fn is_valid_palindrome_with_deletion_one_test() {
+    let ts = vec![("abc", false),("abca", true), ("aba", true)];
+    for (_, t) in ts.iter().enumerate() {
+        assert_eq!(Solution::is_valid_palindrome_with_deletion_one(t.0) , t.1, "Failed {}", t.0) 
     }
   }
 
   // https://leetcode.com/problems/longest-substring-without-repeating-characters/    
   #[test]
   fn length_of_longest_substring_test() {
-    struct TS { input: &'static str, exp : i32}
-    let ts = vec![
-        TS{input: "dvdf", exp : 3}, 
-        TS{input: "abba", exp : 2},
-        TS{input: "bbb", exp : 1},
-        TS{input: "123", exp : 3},
-        TS{input: "au", exp : 2},
-        TS{input: "abcdabcdef", exp : 6},
-        TS{input: "pwwkew", exp : 3},
-        TS{input: " ", exp : 1},
-    ]; 
-
+    let ts = vec![("dvdf",  3), ("abba", 2), ("bbb", 1), ("123", 3),
+        ("au",  2), ("abcdabcdef", 6), ("pwwkew", 3), (" ",  1)]; 
     for (_, t) in ts.iter().enumerate() {
-          assert_eq!(Solution::len_of_longest_substr_norepeat(&t.input), 
-            t.exp, "Failed {}", t.input) 
+          assert_eq!(Solution::len_of_longest_substr_norepeat(&t.0), t.1, "Failed {}", t.0) 
     }
   }
 
   // https://leetcode.com/problems/backspace-string-compare/
   #[test]
   fn backspace_compare_test() {
-    struct TS { input1: &'static str, input2: &'static str, exp : bool}
-    let ts = vec![
-        TS{input1: "ab#c", input2 : "ad#c" , exp : true}, 
-        TS{input1: "ab##", input2 : "c#d#" , exp : true}, 
-        TS{input1: "a#c", input2 : "b" , exp : false}, 
-    ];
-
+    let ts = vec![("ab#c", "ad#c" , true), ("ab##", "c#d#" , true), ("a#c", "b" , false)];
     for (_, t) in ts.iter().enumerate() {
-          assert_eq!(Solution::backspace_compare(t.input1, t.input2),
-            t.exp, "Failed {} {}", t.input1, t.input2) 
+          assert_eq!(Solution::backspace_compare(t.0, t.1), t.2, "Failed {} {}", t.0, t.1) 
     }
   }
 
